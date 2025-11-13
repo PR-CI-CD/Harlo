@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // 🔹 Allow user to manage their own user document
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // 🔹 Allow user to manage any subcollections under their user doc
+    match /users/{uid}/{document=**} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // 🔹 Allow user to manage their own summaries
+    match /summaries/{summaryId} {
+      allow read: if signedIn() && request.auth.uid == resource.data.uid;
+      allow create: if signedIn() && request.auth.uid == request.resource.data.uid;
+      allow update, delete: if signedIn() && request.auth.uid == resource.data.uid;
+    }
+
+    // 🔹 Allow user to manage their own quizzes
+    match /quizzes/{quizId} {
+      allow read: if signedIn() && request.auth.uid == resource.data.uid;
+      allow create: if signedIn() && request.auth.uid == request.resource.data.uid;
+      allow update, delete: if signedIn() && request.auth.uid == resource.data.uid;
+    }
+  }
+}
+
