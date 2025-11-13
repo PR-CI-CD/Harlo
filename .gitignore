@@ -45,6 +45,8 @@ app-example
 #firebase
 /functions
 /services
+
 firestore.rules
 storage.rules
 database.rules.json
+firebase.json
